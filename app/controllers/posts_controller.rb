@@ -8,6 +8,13 @@ class PostsController < ApplicationController
     render json: @posts
   end
 
+  # GET /posts/for_user
+  def for_user
+    @posts = Post.where(user_id: params[:user_id])
+
+    render json: @posts
+  end
+
   # GET /posts/1
   def show
     render json: @post
@@ -46,6 +53,6 @@ class PostsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def post_params
-      params.require(:post).permit(:title, :content)
+      params.require(:post).permit(:title, :content, :user_id)
     end
 end
