@@ -3,9 +3,9 @@ class CommentsController < ApplicationController
 
     # GET /comments
     def index
-      @comments = Comment.where(post_id: params[:post_id])
+      @comments = Comment.includes(:reactions).where(post_id: params[:post_id])
   
-      render json: @comments
+      render json: @comments, include: :reactions
     end
   
     # comment /comments

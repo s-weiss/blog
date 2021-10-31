@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_31_165413) do
+ActiveRecord::Schema.define(version: 2021_10_31_193952) do
 
   create_table "comments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.text "content", null: false
@@ -31,6 +31,16 @@ ActiveRecord::Schema.define(version: 2021_10_31_165413) do
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
+  create_table "reactions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "reaction", null: false
+    t.bigint "comment_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["comment_id"], name: "index_reactions_on_comment_id"
+    t.index ["user_id"], name: "index_reactions_on_user_id"
+  end
+
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", precision: 6, null: false
@@ -40,4 +50,6 @@ ActiveRecord::Schema.define(version: 2021_10_31_165413) do
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
   add_foreign_key "posts", "users"
+  add_foreign_key "reactions", "comments"
+  add_foreign_key "reactions", "users"
 end

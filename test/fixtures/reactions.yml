@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  reaction: smile
+  comment: one
+  user: alice
+
+two:
+  reaction: thumbs_up
+  comment: one
+  user: bob
