@@ -23,6 +23,7 @@ class PostsController < ApplicationController
   # POST /posts
   def create
     @post = Post.new(post_params)
+    @post.user_id = @current_user.id
 
     if @post.save
       render json: @post, status: :created, location: @post
@@ -33,7 +34,9 @@ class PostsController < ApplicationController
 
   # PATCH/PUT /posts/1
   def update
-    if @post.update(post_params.except(:user_id))
+    if @current_user.id != @post.user_id
+      head :unauthorized  
+    elsif @post.update(post_params)
       render json: @post
     else
       render json: @post.errors, status: :unprocessable_entity
@@ -42,7 +45,11 @@ class PostsController < ApplicationController
 
   # DELETE /posts/1
   def destroy
-    @post.destroy
+    if @current_user.id == @post.user_id
+      @post.destroy
+    else
+      head :unauthorized
+    end
   end
 
   private
@@ -53,6 +60,6 @@ class PostsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def post_params
-      params.require(:post).permit(:title, :content, :user_id)
+      params.require(:post).permit(:title, :content)
     end
 end

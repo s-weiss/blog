@@ -1,473 +1,541 @@
-swagger: "2.0"
+openapi: 3.0.1
 info:
-  version: "1.0.0"
-  title: "Blog API"
+  title: Blog API
+  description: |
+    Copy the JWT to authorize.
+
+    - JWT for user alice (id 1): eyJhbGciOiJub25lIn0.eyJ1c2VyX2lkIjoxfQ.
+    - JWT for user bob (id 2): eyJhbGciOiJub25lIn0.eyJ1c2VyX2lkIjoyfQ.
   contact:
-    email: "sebastianweiss@me.com"
-host: 127.0.0.1:3000
-basePath: "/"
+    email: sebastianweiss@me.com
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:3000/
+security:
+  - bearerAuth: []
 tags:
-- name: "post"
-  description: "Fetch / list all posts made by one user. Fetch / display a single post. Create, update, and delete posts."
-- name: "comment"
-  description: "Fetch / list all comments for a post together with the reactions on these comments. Create, update and delete comments on one post."
-- name: "reaction"
-  description: "Create and delete reactions for one comment."
-- name: "user"
-  description: "Fetch / list all users. Create a user."
-schemes:
-- "http"
+- name: post
+  description: Fetch / list all posts made by one user. Fetch / display a single post.
+    Create, update, and delete posts.
+- name: comment
+  description: Fetch / list all comments for a post together with the reactions on
+    these comments. Create, update and delete comments on one post.
+- name: reaction
+  description: Create and delete reactions for one comment.
+- name: user
+  description: Fetch / list all users. Create a user.
 paths:
   /posts:
     get:
       tags:
-      - "post"
-      summary: "Fetch all posts"
-      description: ""
-      produces:
-      - "application/json"
+      - post
+      summary: Fetch all posts
       responses:
-        "200":
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Post"
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        401:
+          description: unauthorized          
     post:
       tags:
-      - "post"
-      summary: "Create a post"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Create post object"
+      - post
+      summary: Create a post
+      requestBody:
+        description: Create post object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostParams'
         required: true
-        schema:
-          $ref: "#/definitions/PostParams"
       responses:
-        "201":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Post"
-        "422":
-          description: "unprocessable entity"
+        201:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        422:
+          description: unprocessable entity
+        400:
+          description: bad request
+        401:
+          description: unauthorized
+      x-codegen-request-body-name: body
   /posts/{id}:
     get:
       tags:
-      - "post"
-      summary: "Fetch / display a single post"
-      produces:
-      - "application/json"
+      - post
+      summary: Fetch / display a single post
       parameters:
-      - name: "id"
-        in: "path"
-        description: "Id of the post to fetch."
-        required: true
-        type: "integer"
-      responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Post"
-        "404":
-          description: "Post not found"
-    put:
-      tags:
-      - "post"
-      summary: "Update a post"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Id of the post to update."
-        required: true
-        type: "integer"
-      - in: "body"
-        name: "body"
-        description: "Update post object"
+      - name: id
+        in: path
+        description: Id of the post to fetch.
         required: true
         schema:
-          $ref: "#/definitions/PostParams"
+          type: integer
       responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Post"
-        "422":
-          description: "unprocessable entity"
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        404:
+          description: Post not found
+        401:
+          description: unauthorized
+    put:
+      tags:
+      - post
+      summary: Update a post
+      parameters:
+      - name: id
+        in: path
+        description: Id of the post to update.
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Update post object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostParams'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        422:
+          description: unprocessable entity
+        400:
+          description: bad request
+        401:
+          description: unauthorized
+      x-codegen-request-body-name: body
     delete:
       tags:
-      - "post"
-      summary: "Delete a post"
-      produces:
-      - "application/json"
+      - post
+      summary: Delete a post
       parameters:
-      - name: "id"
-        in: "path"
-        description: "Id of the post that needs to be deleted"
+      - name: id
+        in: path
+        description: Id of the post that needs to be deleted
         required: true
-        type: "integer"
+        schema:
+          type: integer
       responses:
-        "204":
-          description: "No Content"
-        "404":
-          description: "Post not found"
+        204:
+          description: No Content
+          content: {}
+        404:
+          description: Post not found
+        401:
+          description: unauthorized
   /posts/for_user/{id}:
     get:
       tags:
-      - "post"
-      summary: "Fetch / list all posts made by one user"
-      description: ""
-      produces:
-      - "application/json"
+      - post
+      summary: Fetch / list all posts made by one user
       parameters:
-      - name: "id"
-        in: "path"
-        description: "Id of the user."
+      - name: id
+        in: path
+        description: Id of the user.
         required: true
-        type: "integer"
+        schema:
+          type: integer
       responses:
-        "200":
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Post"
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        401:
+          description: unauthorized          
   /posts/{post_id}/comments:
     get:
       tags:
-      - "comment"
-      summary: "Fetch / list all comments for a post together with the reactions on these comments"
-      produces:
-      - "application/json"
+      - comment
+      summary: Fetch / list all comments for a post together with the reactions on
+        these comments
       parameters:
-      - name: "post_id"
-        in: "path"
-        description: "Id of the post to fetch."
+      - name: post_id
+        in: path
+        description: Id of the post to fetch.
         required: true
-        type: "integer"
+        schema:
+          type: integer
       responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/CommentsWithReactions"
-        "404":
-          description: "Post not found"
-  /posts/{post_id}/comments/{id}:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsWithReactions'
+        404:
+          description: Post not found
+        401:
+          description: unauthorized  
     post:
       tags:
-      - "comment"
-      summary: "Create a comment"
-      produces:
-      - "application/json"
+      - comment
+      summary: Create a comment
       parameters:
-      - name: "post_id"
-        in: "path"
-        description: "Id of the post, the comment is attached to."
-        required: true
-        type: integer
-      - in: "body"
-        name: "body"
-        description: "Create comment object"
+      - name: post_id
+        in: path
+        description: Id of the post, the comment is attached to.
         required: true
         schema:
-          $ref: "#/definitions/CommentParams"
+          type: integer
+      requestBody:
+        description: Create comment object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentParams'
+        required: true
       responses:
-        "201":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Comment"
-        "422":
-          description: "unprocessable entity"
+        201:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        422:
+          description: unprocessable entity
+        400:
+          description: bad request
+        401:
+          description: unauthorized  
+      x-codegen-request-body-name: body
+  /posts/{post_id}/comments/{id}:
     put:
       tags:
-      - "comment"
-      summary: "Update a comment"
-      produces:
-      - "application/json"
+      - comment
+      summary: Update a comment
       parameters:
-      - name: "post_id"
-        in: "path"
-        description: "Id of the post, the comment is attached to."
-        required: true
-        type: integer
-      - name: "id"
-        in: "path"
-        description: "Id of the comment to update."
-        required: true
-        type: "integer"
-      - in: "body"
-        name: "body"
-        description: "Update comment object"
+      - name: post_id
+        in: path
+        description: Id of the post, the comment is attached to.
         required: true
         schema:
-          $ref: "#/definitions/CommentParams"
+          type: integer
+      - name: id
+        in: path
+        description: Id of the comment to update.
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Update comment object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentParams'
+        required: true
       responses:
-        "200":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Comment"
-        "422":
-          description: "unprocessable entity"
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        422:
+          description: unprocessable entity
+        400:
+          description: bad request
+        401:
+          description: unauthorized  
+      x-codegen-request-body-name: body
     delete:
       tags:
-      - "comment"
-      summary: "Delete a comment"
-      produces:
-      - "application/json"
+      - comment
+      summary: Delete a comment
       parameters:
-      - name: "post_id"
-        in: "path"
-        description: "Id of the post, the comment is attached to."
+      - name: post_id
+        in: path
+        description: Id of the post, the comment is attached to.
         required: true
-        type: integer
-      - name: "id"
-        in: "path"
-        description: "Id of the comment that needs to be deleted"
+        schema:
+          type: integer
+      - name: id
+        in: path
+        description: Id of the comment that needs to be deleted
         required: true
-        type: "integer"
+        schema:
+          type: integer
       responses:
-        "204":
-          description: "No Content"
-        "404":
-          description: "Post not found"
+        204:
+          description: No Content
+        404:
+          description: Post not found
+        401:
+          description: unauthorized  
   /comments/{comment_id}/reactions:
     post:
       tags:
-      - "reaction"
-      summary: "Create a reaction"
-      produces:
-      - "application/json"
+      - reaction
+      summary: Create a reaction
       parameters:
-      - name: "comment_id"
-        in: "path"
-        description: "Id of the comment to react on."
-        required: true
-        type: integer
-      - in: "body"
-        name: "body"
+      - name: comment_id
+        in: path
+        description: Id of the comment to react on.
         required: true
         schema:
-          $ref: "#/definitions/ReactionParams"
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactionParams'
+        required: true
       responses:
-        "201":
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Comment"
-        "422":
-          description: "unprocessable entity"
+        201:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        422:
+          description: unprocessable entity
+        400:
+          description: bad request
+        401:
+          description: unauthorized
+      x-codegen-request-body-name: body
   /comments/{comment_id}/reactions/{id}:
     delete:
       tags:
-      - "reaction"
-      summary: "Delete a reaction"
-      produces:
-      - "application/json"
+      - reaction
+      summary: Delete a reaction
       parameters:
-      - name: "comment_id"
-        in: "path"
-        description: "Id of the comment of the reaction."
+      - name: comment_id
+        in: path
+        description: Id of the comment of the reaction.
         required: true
-        type: integer
-      - name: "id"
-        in: "path"
-        description: "Id of the reaction to be deleted"
+        schema:
+          type: integer
+      - name: id
+        in: path
+        description: Id of the reaction to be deleted
         required: true
-        type: "integer"
+        schema:
+          type: integer
       responses:
-        "204":
-          description: "No Content"
-        "404":
-          description: "Post not found"
+        204:
+          description: No Content
+        404:
+          description: Post not found
+        401:
+          description: unauthorized  
   /users/:
     get:
       tags:
-      - "user"
-      summary: "List users"
-      description: ""
-      produces:
-      - "application/json"
+      - user
+      summary: List users
       responses:
-        "200":
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/User"
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        401:
+          description: unauthorized          
     post:
       tags:
-      - "user"
-      summary: "Create user"
-      description: ""
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Create user object"
+      - user
+      summary: Create user
+      requestBody:
+        description: Create user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserParams'
         required: true
-        schema:
-          $ref: "#/definitions/UserParams"
       responses:
-        "201":
-          description: "created"
-          schema:
-            $ref: "#/definitions/User"
-        "422":
-          description: "unprocessable entity"
-definitions:
-  Post:
-    type: "object"
-    properties:
-      id: 
-        type: "integer"
-      title:
-        type: "string"
-        maxLength: 255
-      content:
-        type: "string"
-      user_id:
-        type: "integer"
-        description: "Id of the user who created the post."
-      created_at:
-        type: "string"
-        format: "date-time"
-      updated_at:
-        type: "string"
-        format: "date-time"
-  PostParams:
-    type: "object"
-    properties: 
-      title:
-        type: "string"
-        maxLength: 255
-      content:
-        type: "string"
-      user_id:
-        type: "integer"
-        description: "Id of the user who created the post."
-  Comment:
-    type: "object"
-    properties:
-      id: 
-        type: "integer"
-      title:
-        type: "string"
-        maxLength: 255
-      content:
-        type: "string"
-      user_id:
-        type: "integer"
-        description: "Id of the user who created the post."
-      post_id:
-        type: "integer"
-        description: "Id of the post of the comment."
-      created_at:
-        type: "string"
-        format: "date-time"
-      updated_at:
-        type: "string"
-        format: "date-time"
-  CommentParams:
-    type: "object"
-    properties: 
-      content:
-        type: "string"
-      user_id:
-        type: "integer"
-        description: "Id of the user who created the post."
-  Reaction:
-    type: "object"
-    properties: 
-      reaction:
-        type: "string"
-        enum: ["like", "smile", "thumbs_up"]
-      user_id:
-        type: "integer"
-        description: "Id of the user who reacted."
-      comment_id:
-        type: "integer"
-        description: "Id of the comment."
-      created_at:
-        type: "string"
-        format: "date-time"
-      updated_at:
-        type: "string"
-        format: "date-time"
-  ReactionParams:
-    type: "object"
-    properties: 
-      reaction:
-        type: "string"
-        enum: ["like", "smile", "thumbs_up"]
-      user_id:
-        type: "integer"
-        description: "Id of the user who reacted."
-  CommentsWithReactions:
-    type: "object"
-    properties:
-      id: 
-        type: "integer"
-      title:
-        type: "string"
-        maxLength: 255
-      content:
-        type: "string"
-      user_id:
-        type: "integer"
-        description: "Id of the user who created the post."
-      post_id:
-        type: "integer"
-        description: "Id of the post of the comment."
-      created_at:
-        type: "string"
-        format: "date-time"
-      updated_at:
-        type: "string"
-        format: "date-time"
-      reactions:
-        type: "array"
-        items:
-          type: "object"
+        201:
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        422:
+          description: unprocessable entity
+        400:
+          description: bad request
+        401:
+          description: unauthorized
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          maxLength: 255
+          type: string
+        content:
+          type: string
+        user_id:
+          type: integer
+          description: Id of the user who created the post.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PostParams:
+      type: object
+      properties:
+        post:
+          type: object
           properties:
-            id: 
-              type: "integer"
-            reaction:
-              type: "string"
-            user_id:
-              type: "integer"
-              description: "Id of the user who created the post."
-            comment_id:
-              type: "integer"
-              description: "Id of the comment the reaction belongs to."
-            created_at:
-              type: "string"
-              format: "date-time"
-            updated_at:
-              type: "string"
-              format: "date-time"
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-      name:
-        type: "string"
-        maxLength: 255
-      created_at:
-        type: "string"
-        format: "date-time"
-      updated_at:
-        type: "string"
-        format: "date-time"
-  UserParams:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-        maxLength: 255
-    required:
-      - "name"
+            title:
+              maxLength: 255
+              type: string
+            content:
+              type: string
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          maxLength: 255
+          type: string
+        content:
+          type: string
+        user_id:
+          type: integer
+          description: Id of the user who created the post.
+        post_id:
+          type: integer
+          description: Id of the post of the comment.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CommentParams:
+      type: object
+      properties:
+        content:
+          type: string
+    Reaction:
+      type: object
+      properties:
+        reaction:
+          type: string
+          enum:
+          - like
+          - smile
+          - thumbs_up
+        user_id:
+          type: integer
+          description: Id of the user who reacted.
+        comment_id:
+          type: integer
+          description: Id of the comment.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ReactionParams:
+      type: object
+      properties:
+        reaction:
+          type: string
+          enum:
+          - like
+          - smile
+          - thumbs_up
+    CommentsWithReactions:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          maxLength: 255
+          type: string
+        content:
+          type: string
+        user_id:
+          type: integer
+          description: Id of the user who created the post.
+        post_id:
+          type: integer
+          description: Id of the post of the comment.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        reactions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              reaction:
+                type: string
+              user_id:
+                type: integer
+                description: Id of the user who created the post.
+              comment_id:
+                type: integer
+                description: Id of the comment the reaction belongs to.
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          maxLength: 255
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UserParams:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -7,7 +7,7 @@ class ReactionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create reaction" do
     assert_difference('Reaction.count') do
-      post comment_reactions_url(@reaction.comment), params: { reaction: { reaction: @reaction.reaction, user_id: @reaction.user_id } }, as: :json
+      post comment_reactions_url(@reaction.comment), params: { reaction: { reaction: @reaction.reaction } }, headers: auth_header, as: :json
     end
 
     assert_response 201
@@ -15,9 +15,15 @@ class ReactionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should destroy reaction" do
     assert_difference('Reaction.count', -1) do
-      delete comment_reaction_url(@reaction.comment, @reaction), as: :json
+      delete comment_reaction_url(@reaction.comment, @reaction), headers: auth_header, as: :json
     end
 
     assert_response 204
+  end
+
+  test "should not destroy reaction of another user" do
+    delete comment_reaction_url(@reaction.comment, @reaction), headers: auth_header(users(:bob)), as: :json
+
+    assert_response 401
   end
 end

@@ -12,6 +12,7 @@ class CommentsController < ApplicationController
     def create
       @comment = Comment.new(comment_params)
       @comment.post_id = params[:post_id]
+      @comment.user_id = @current_user.id
   
       if @comment.save
         render json: @comment, status: :created, location: @post
@@ -22,7 +23,9 @@ class CommentsController < ApplicationController
   
     # PATCH/PUT /comments/1
     def update
-      if @comment.update(comment_params.except(:user_id))
+      if @current_user.id != @comment.user_id
+        head :unauthorized
+      elsif @comment.update(comment_params)
         render json: @comment
       else
         render json: @comment.errors, status: :unprocessable_entity
@@ -31,7 +34,11 @@ class CommentsController < ApplicationController
   
     # DELETE /comments/1
     def destroy
-      @comment.destroy
+      if @current_user.id == @comment.user_id
+        @comment.destroy
+      else
+        head :unauthorized
+      end
     end
   
     private
@@ -42,6 +49,6 @@ class CommentsController < ApplicationController
   
       # Only allow a list of trusted parameters through.
       def comment_params
-        params.require(:comment).permit(:content, :user_id)
+        params.require(:comment).permit(:content)
       end
 end
