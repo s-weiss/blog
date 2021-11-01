@@ -1,0 +1,473 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Blog API"
+  contact:
+    email: "sebastianweiss@me.com"
+host: 127.0.0.1:3000
+basePath: "/"
+tags:
+- name: "post"
+  description: "Fetch / list all posts made by one user. Fetch / display a single post. Create, update, and delete posts."
+- name: "comment"
+  description: "Fetch / list all comments for a post together with the reactions on these comments. Create, update and delete comments on one post."
+- name: "reaction"
+  description: "Create and delete reactions for one comment."
+- name: "user"
+  description: "Fetch / list all users. Create a user."
+schemes:
+- "http"
+paths:
+  /posts:
+    get:
+      tags:
+      - "post"
+      summary: "Fetch all posts"
+      description: ""
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Post"
+    post:
+      tags:
+      - "post"
+      summary: "Create a post"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Create post object"
+        required: true
+        schema:
+          $ref: "#/definitions/PostParams"
+      responses:
+        "201":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Post"
+        "422":
+          description: "unprocessable entity"
+  /posts/{id}:
+    get:
+      tags:
+      - "post"
+      summary: "Fetch / display a single post"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Id of the post to fetch."
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Post"
+        "404":
+          description: "Post not found"
+    put:
+      tags:
+      - "post"
+      summary: "Update a post"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Id of the post to update."
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: "Update post object"
+        required: true
+        schema:
+          $ref: "#/definitions/PostParams"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Post"
+        "422":
+          description: "unprocessable entity"
+    delete:
+      tags:
+      - "post"
+      summary: "Delete a post"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Id of the post that needs to be deleted"
+        required: true
+        type: "integer"
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Post not found"
+  /posts/for_user/{id}:
+    get:
+      tags:
+      - "post"
+      summary: "Fetch / list all posts made by one user"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Id of the user."
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Post"
+  /posts/{post_id}/comments:
+    get:
+      tags:
+      - "comment"
+      summary: "Fetch / list all comments for a post together with the reactions on these comments"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "post_id"
+        in: "path"
+        description: "Id of the post to fetch."
+        required: true
+        type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/CommentsWithReactions"
+        "404":
+          description: "Post not found"
+  /posts/{post_id}/comments/{id}:
+    post:
+      tags:
+      - "comment"
+      summary: "Create a comment"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "post_id"
+        in: "path"
+        description: "Id of the post, the comment is attached to."
+        required: true
+        type: integer
+      - in: "body"
+        name: "body"
+        description: "Create comment object"
+        required: true
+        schema:
+          $ref: "#/definitions/CommentParams"
+      responses:
+        "201":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Comment"
+        "422":
+          description: "unprocessable entity"
+    put:
+      tags:
+      - "comment"
+      summary: "Update a comment"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "post_id"
+        in: "path"
+        description: "Id of the post, the comment is attached to."
+        required: true
+        type: integer
+      - name: "id"
+        in: "path"
+        description: "Id of the comment to update."
+        required: true
+        type: "integer"
+      - in: "body"
+        name: "body"
+        description: "Update comment object"
+        required: true
+        schema:
+          $ref: "#/definitions/CommentParams"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Comment"
+        "422":
+          description: "unprocessable entity"
+    delete:
+      tags:
+      - "comment"
+      summary: "Delete a comment"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "post_id"
+        in: "path"
+        description: "Id of the post, the comment is attached to."
+        required: true
+        type: integer
+      - name: "id"
+        in: "path"
+        description: "Id of the comment that needs to be deleted"
+        required: true
+        type: "integer"
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Post not found"
+  /comments/{comment_id}/reactions:
+    post:
+      tags:
+      - "reaction"
+      summary: "Create a reaction"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "comment_id"
+        in: "path"
+        description: "Id of the comment to react on."
+        required: true
+        type: integer
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/ReactionParams"
+      responses:
+        "201":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Comment"
+        "422":
+          description: "unprocessable entity"
+  /comments/{comment_id}/reactions/{id}:
+    delete:
+      tags:
+      - "reaction"
+      summary: "Delete a reaction"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "comment_id"
+        in: "path"
+        description: "Id of the comment of the reaction."
+        required: true
+        type: integer
+      - name: "id"
+        in: "path"
+        description: "Id of the reaction to be deleted"
+        required: true
+        type: "integer"
+      responses:
+        "204":
+          description: "No Content"
+        "404":
+          description: "Post not found"
+  /users/:
+    get:
+      tags:
+      - "user"
+      summary: "List users"
+      description: ""
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/User"
+    post:
+      tags:
+      - "user"
+      summary: "Create user"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Create user object"
+        required: true
+        schema:
+          $ref: "#/definitions/UserParams"
+      responses:
+        "201":
+          description: "created"
+          schema:
+            $ref: "#/definitions/User"
+        "422":
+          description: "unprocessable entity"
+definitions:
+  Post:
+    type: "object"
+    properties:
+      id: 
+        type: "integer"
+      title:
+        type: "string"
+        maxLength: 255
+      content:
+        type: "string"
+      user_id:
+        type: "integer"
+        description: "Id of the user who created the post."
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  PostParams:
+    type: "object"
+    properties: 
+      title:
+        type: "string"
+        maxLength: 255
+      content:
+        type: "string"
+      user_id:
+        type: "integer"
+        description: "Id of the user who created the post."
+  Comment:
+    type: "object"
+    properties:
+      id: 
+        type: "integer"
+      title:
+        type: "string"
+        maxLength: 255
+      content:
+        type: "string"
+      user_id:
+        type: "integer"
+        description: "Id of the user who created the post."
+      post_id:
+        type: "integer"
+        description: "Id of the post of the comment."
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  CommentParams:
+    type: "object"
+    properties: 
+      content:
+        type: "string"
+      user_id:
+        type: "integer"
+        description: "Id of the user who created the post."
+  Reaction:
+    type: "object"
+    properties: 
+      reaction:
+        type: "string"
+        enum: ["like", "smile", "thumbs_up"]
+      user_id:
+        type: "integer"
+        description: "Id of the user who reacted."
+      comment_id:
+        type: "integer"
+        description: "Id of the comment."
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  ReactionParams:
+    type: "object"
+    properties: 
+      reaction:
+        type: "string"
+        enum: ["like", "smile", "thumbs_up"]
+      user_id:
+        type: "integer"
+        description: "Id of the user who reacted."
+  CommentsWithReactions:
+    type: "object"
+    properties:
+      id: 
+        type: "integer"
+      title:
+        type: "string"
+        maxLength: 255
+      content:
+        type: "string"
+      user_id:
+        type: "integer"
+        description: "Id of the user who created the post."
+      post_id:
+        type: "integer"
+        description: "Id of the post of the comment."
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+      reactions:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id: 
+              type: "integer"
+            reaction:
+              type: "string"
+            user_id:
+              type: "integer"
+              description: "Id of the user who created the post."
+            comment_id:
+              type: "integer"
+              description: "Id of the comment the reaction belongs to."
+            created_at:
+              type: "string"
+              format: "date-time"
+            updated_at:
+              type: "string"
+              format: "date-time"
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+        maxLength: 255
+      created_at:
+        type: "string"
+        format: "date-time"
+      updated_at:
+        type: "string"
+        format: "date-time"
+  UserParams:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        maxLength: 255
+    required:
+      - "name"

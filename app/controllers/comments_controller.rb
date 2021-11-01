@@ -8,7 +8,7 @@ class CommentsController < ApplicationController
       render json: @comments, include: :reactions
     end
   
-    # comment /comments
+    # POST /comments
     def create
       @comment = Comment.new(comment_params)
       @comment.post_id = params[:post_id]

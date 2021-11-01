@@ -5,3 +5,18 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+alice = User.create(name: "alice")
+bob = User.create(name: "bob")
+
+2.times do |index|
+    Post.create(title: "Alices post #{index + 1}", user: alice)
+end
+
+Post.create(title: "Bobs post 1", user: bob)
+
+post = alice.posts.first
+
+comment = Comment.create(content: "A comment", user: alice, post: post)
+[alice, bob].each do |user|
+  Reaction.create(reaction: 'smile', user: user, comment: comment)
+end
