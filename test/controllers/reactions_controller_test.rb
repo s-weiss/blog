@@ -7,7 +7,7 @@ class ReactionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create reaction" do
     assert_difference('Reaction.count') do
-      post comment_reactions_url(@reaction.comment), params: { reaction: { comment_id: @reaction.comment_id, reaction: @reaction.reaction, user_id: @reaction.user_id } }, as: :json
+      post comment_reactions_url(@reaction.comment), params: { reaction: { reaction: @reaction.reaction, user_id: @reaction.user_id } }, as: :json
     end
 
     assert_response 201

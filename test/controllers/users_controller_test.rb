@@ -7,32 +7,27 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   test "should get index" do
     get users_url, as: :json
+
     assert_response :success
+  end
+
+  test "index should return all users" do
+    users = User.all
+    get users_url, as: :json
+    
+    returnvalue = JSON.parse(@response.body).map { |u| User.new(u) }
+
+    assert_equal(users, returnvalue)
   end
 
   test "should create user" do
     assert_difference('User.count') do
       post users_url, params: { user: { name: @user.name } }, as: :json
     end
+    response =  JSON.parse(@response.body)
 
+    assert_equal(response["name"], @user.name)
+    assert_not_nil(response["id"])
     assert_response 201
-  end
-
-  test "should show user" do
-    get user_url(@user), as: :json
-    assert_response :success
-  end
-
-  test "should update user" do
-    patch user_url(@user), params: { user: { name: @user.name } }, as: :json
-    assert_response 200
-  end
-
-  test "should destroy user" do
-    assert_difference('User.count', -1) do
-      delete user_url(@user), as: :json
-    end
-
-    assert_response 204
   end
 end

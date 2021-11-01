@@ -22,7 +22,7 @@ class CommentsController < ApplicationController
   
     # PATCH/PUT /comments/1
     def update
-      if @comment.update(comment_params)
+      if @comment.update(comment_params.except(:user_id))
         render json: @comment
       else
         render json: @comment.errors, status: :unprocessable_entity
