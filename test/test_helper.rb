@@ -10,4 +10,8 @@ class ActiveSupport::TestCase
   fixtures :all
 
   # Add more helper methods to be used by all tests here...
+  def auth_header(user = users(:alice))
+    token = JWT.encode({user_id: user.id}, nil, 'none')
+    @auth_header = {"AUTHORIZATION": "Bearer: #{token}"}
+  end
 end

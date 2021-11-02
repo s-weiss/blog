@@ -3,6 +3,7 @@ class ReactionsController < ApplicationController
   def create
     @reaction = Reaction.new(reaction_params)
     @reaction.comment_id = params[:comment_id]
+    @reaction.user_id = @current_user.id
 
     if @reaction.save
       render json: @reaction, status: :created, location: @comment
@@ -14,11 +15,16 @@ class ReactionsController < ApplicationController
   # DELETE /reactions/1
   def destroy
     @reaction = Reaction.find(params[:id])
-    @reaction.destroy
+
+    if @current_user.id == @reaction.user_id
+      @reaction.destroy
+    else
+      head :unauthorized
+    end
   end
 
   private
     def reaction_params
-      params.require(:reaction).permit(:reaction, :user_id)
+      params.require(:reaction).permit(:reaction)
     end
 end

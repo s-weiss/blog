@@ -4,13 +4,13 @@ class ApplicationController < ActionController::API
   private
     def authorize
       if !current_user
-        render json: '', status: :unauthorized
+        head :unauthorized
       end
     end
 
     def current_user
       user_id = decoded_token[0]["user_id"]
-      @current_user = User.where(id: user_id)
+      @current_user = User.find(user_id)
     rescue
       nil
     end
